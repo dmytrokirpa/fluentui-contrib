@@ -2,6 +2,7 @@ import type { StorybookConfig } from '@storybook/react-webpack5';
 
 const config: StorybookConfig = {
   stories: [],
+
   addons: [
     '@storybook/addon-actions',
     '@storybook/addon-docs',
@@ -14,14 +15,17 @@ const config: StorybookConfig = {
         },
       },
     },
+    '@storybook/addon-webpack5-compiler-babel'
   ],
+
   framework: {
     name: '@storybook/react-webpack5',
     options: {},
   },
-  docs: {
-    autodocs: true,
-  },
+
+  typescript: {
+    reactDocgen: 'react-docgen-typescript'
+  }
 };
 
 export default config;

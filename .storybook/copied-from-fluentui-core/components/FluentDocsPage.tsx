@@ -1,12 +1,12 @@
 import * as React from 'react';
 import {
   DocsContext,
-  ArgsTable,
+  ArgTypes,
   Description,
   Stories,
   type DocsContextProps,
 } from '@storybook/addon-docs';
-import type { SBEnumType, PreparedStory, Renderer } from '@storybook/types';
+import type { SBEnumType, PreparedStory, Renderer } from '@storybook/core-common';
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components';
 import { InfoFilled } from '@fluentui/react-icons';
 import { Toc } from './Toc';
@@ -89,7 +89,7 @@ const RenderArgsTable = ({
   const styles = useStyles();
   return hideArgsTable ? null : (
     <>
-      <ArgsTable of={primaryStory.component} />
+      <ArgTypes of={primaryStory.component} />
       {primaryStory.argTypes.as &&
         primaryStory.argTypes.as?.type?.name === 'enum' && (
           <div className={styles.nativeProps}>
