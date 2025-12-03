@@ -12,7 +12,7 @@ export interface IndexedResizeCallbackElement {
  * `measureElementRef` - a ref function to be passed as `ref` to the element you want to measure
  */
 
-const SCROLL_ALLOWANCE = 100;
+const VIEWPORT_TOLERANCE = 1;
 
 export function useMeasureList<
   TElement extends HTMLElement & IndexedResizeCallbackElement = HTMLElement &
@@ -25,6 +25,10 @@ export function useMeasureList<
   sizeTrackingArray: React.MutableRefObject<number[]>;
   axis: 'horizontal' | 'vertical';
   requestScrollBy?: (sizeChange: number) => void;
+  scrollViewRef?: React.RefObject<HTMLElement | null>;
+  onItemMeasured?: (index: number, size: number, delta: number) => void;
+  /** Ref to disable scroll compensation when scrollTo operation is active */
+  disableScrollCompensationRef?: React.RefObject<boolean>;
 }): {
   createIndexedRef: (index: number) => (el: TElement) => void;
   refObject: React.MutableRefObject<{
@@ -39,6 +43,9 @@ export function useMeasureList<
     axis,
     requestScrollBy,
     virtualizerLength,
+    scrollViewRef,
+    onItemMeasured,
+    disableScrollCompensationRef,
   } = measureParams;
 
   const { targetDocument } = useFluent();
@@ -62,21 +69,43 @@ export function useMeasureList<
           : boundClientRect?.width) ?? defaultItemSize;
 
       const sizeDifference = containerSize - sizeTrackingArray.current[index];
+      onItemMeasured?.(index, containerSize, sizeDifference);
+
+      const scrollContainerRect =
+        scrollViewRef?.current?.getBoundingClientRect();
+      const isVertical = axis === 'vertical';
+      const isAboveViewport = scrollContainerRect
+        ? isVertical
+          ? boundClientRect.bottom <=
+            scrollContainerRect.top + VIEWPORT_TOLERANCE
+          : boundClientRect.right <=
+            scrollContainerRect.left + VIEWPORT_TOLERANCE
+        : isVertical
+        ? boundClientRect.bottom <= VIEWPORT_TOLERANCE
+        : boundClientRect.right <= VIEWPORT_TOLERANCE;
+
       // Todo: Handle reverse setup
       // This requests a scrollBy to offset the new change
-      if (sizeDifference !== 0) {
-        const itemPosition = boundClientRect.bottom - SCROLL_ALLOWANCE;
-        if (axis === 'vertical' && itemPosition <= sizeDifference) {
-          requestScrollBy?.(sizeDifference);
-        } else if (axis === 'horizontal' && itemPosition <= sizeDifference) {
-          requestScrollBy?.(sizeDifference);
-        }
+      // Skip compensation when scrollTo operation is active (it handles its own compensation)
+      if (
+        sizeDifference !== 0 &&
+        isAboveViewport &&
+        !disableScrollCompensationRef?.current
+      ) {
+        requestScrollBy?.(sizeDifference);
       }
 
       // Update size tracking array which gets exposed if teams need it
       sizeTrackingArray.current[index] = containerSize;
     },
-    [defaultItemSize, requestScrollBy, axis, sizeTrackingArray]
+    [
+      defaultItemSize,
+      requestScrollBy,
+      axis,
+      sizeTrackingArray,
+      onItemMeasured,
+      scrollViewRef,
+    ]
   );
 
   const handleElementResizeCallback = (entries: ResizeObserverEntry[]) => {
@@ -94,7 +123,7 @@ export function useMeasureList<
     Even if items in the 'middle' are deleted, we will recalc the whitespace as it is explored.*/
     if (newLength > 0) {
       sizeTrackingArray.current = sizeTrackingArray.current.concat(
-        new Array(newLength).fill(defaultItemSize)
+        Array.from({ length: newLength }, () => defaultItemSize)
       );
     } else if (newLength < 0) {
       sizeTrackingArray.current = sizeTrackingArray.current.slice(
