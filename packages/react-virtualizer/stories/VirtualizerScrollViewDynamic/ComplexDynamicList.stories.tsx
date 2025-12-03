@@ -16,7 +16,7 @@ import { JSXElement } from '@fluentui/react-utilities';
 
 const useStyles = makeStyles({
   container: {
-    maxHeight: '80vh',
+    flexGrow: 1,
     border: '2px solid red',
     backgroundColor: '#f5f5f5',
   },
@@ -77,17 +77,17 @@ const LazyLoadingComponent = React.forwardRef(
     );
 
     React.useEffect(() => {
-      console.log(
-        `LazyLoadingComponent ${index} mounting, starting phase progression`
-      );
+      // console.log(
+      //   `LazyLoadingComponent ${index} mounting, starting phase progression`
+      // );
 
       // Let's set the image to loaded immediatly to stress-test an immediate size update
       // Phase 1: "Image" loads - longer delay to allow scrolling during loading
       const timer1 = setTimeout(() => {
         if (!imageLoaded) {
-          console.log(
-            `LazyLoadingComponent ${index} entering phase 1 - image loading`
-          );
+          // console.log(
+          //   `LazyLoadingComponent ${index} entering phase 1 - image loading`
+          // );
           setImageLoaded(true);
         }
       }, 2000 + (index % 3) * 500); // 2-3.5 seconds
@@ -95,9 +95,9 @@ const LazyLoadingComponent = React.forwardRef(
       // Phase 2: "Content" loads - even longer delay
       const timer2 = setTimeout(() => {
         if (!contentLoaded) {
-          console.log(
-            `LazyLoadingComponent ${index} entering phase 2 - content loading`
-          );
+          // console.log(
+          //   `LazyLoadingComponent ${index} entering phase 2 - content loading`
+          // );
         }
         setContentLoaded(true);
       }, 4000 + (index % 4) * 800); // 4-7.2 seconds
@@ -105,17 +105,17 @@ const LazyLoadingComponent = React.forwardRef(
       // Phase 3: "Massive content" loads - very long delay to ensure user is scrolling
       const timer3 = setTimeout(() => {
         if (!massiveContentLoaded) {
-          console.log(
-            `LazyLoadingComponent ${index} entering phase 3 - MASSIVE CONTENT loading`
-          );
+          // console.log(
+          //   `LazyLoadingComponent ${index} entering phase 3 - MASSIVE CONTENT loading`
+          // );
           setMassiveContentLoaded(true);
         }
       }, 6000 + (index % 5) * 1000); // 6-10 seconds
 
       return () => {
-        console.log(
-          `LazyLoadingComponent ${index} unmounting, clearing timers and resetting state`
-        );
+        // console.log(
+        //   `LazyLoadingComponent ${index} unmounting, clearing timers and resetting state`
+        // );
         clearTimeout(timer1);
         clearTimeout(timer2);
         clearTimeout(timer3);
@@ -304,6 +304,11 @@ export const ComplexDynamicList = (): JSXElement => {
       'instant', // Instant is safer in a dynamic environment (might move while scrolling there)
       (index: number) => {
         console.log('Reached index: ', index);
+
+        document.querySelector(`#virtualizer-item-${index}`)?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+        });
       }
     );
   };
@@ -339,7 +344,7 @@ export const ComplexDynamicList = (): JSXElement => {
 
   const renderChild = React.useCallback(
     (index: number) => {
-      console.log('Rendering child:', index);
+      // console.log('Rendering child:', index);
       return (
         <LazyLoadingComponent
           key={`item-${index}`}
@@ -355,11 +360,16 @@ export const ComplexDynamicList = (): JSXElement => {
   );
 
   return (
-    <div>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: 'calc(100vh - 2rem)',
+      }}
+    >
       <div
         style={{
           boxSizing: 'border-box',
-          margin: '0 0 20px 0',
           padding: '16px',
           backgroundColor: '#fff3cd',
           border: '1px solid #ffeaa7',
@@ -423,9 +433,6 @@ export const ComplexDynamicList = (): JSXElement => {
         container={{
           role: 'list',
           className: styles.container,
-          style: {
-            maxHeight: '80vh',
-          },
         }}
         bufferItems={1}
         bufferSize={30}

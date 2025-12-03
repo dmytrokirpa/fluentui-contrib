@@ -66,10 +66,18 @@ export const ScrollTo = (): JSXElement => {
   );
 
   return (
-    <div>
-      <Input defaultValue={'0'} onChange={onChangeGoToIndex} />
-      <Button onClick={scrollToIndex}>{'GoTo'}</Button>
-      <Text aria-live="polite">{message}</Text>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: 'calc(100vh - 2rem)',
+      }}
+    >
+      <div style={{ padding: '16px' }}>
+        <Input defaultValue={'0'} onChange={onChangeGoToIndex} />
+        <Button onClick={scrollToIndex}>{'GoTo'}</Button>
+        <Text aria-live="polite">{message}</Text>
+      </div>
       <VirtualizerScrollViewDynamic
         numItems={childLength}
         itemSize={100}
@@ -80,7 +88,7 @@ export const ScrollTo = (): JSXElement => {
           role: 'list',
           'aria-label': `Virtualized list with ${childLength} children`,
           tabIndex: 0,
-          style: { maxHeight: '80vh' },
+          style: { flexGrow: 1 },
         }}
       >
         {(index: number) => {
