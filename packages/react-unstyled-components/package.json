@@ -1,0 +1,13 @@
+{
+  "name": "@fluentui-contrib/react-unstyled-components",
+  "version": "0.0.1",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "dependencies": {
+    "@swc/helpers": "~0.5.11"
+  },
+  "peerDependencies": {
+    "@fluentui/react-components": ">=9.70.0 <10.0.0"
+  },
+  "private": true
+}
